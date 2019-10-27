@@ -54,41 +54,40 @@
     },
     methods: {
       getDataFromServer() { // 从服务端加载数据
-        // 伪造演示数据
-        const brands = [
-          {
-            "id": 2032,
-            "name": "OPPO",
-            "image": "http://img10.360buyimg.com/popshop/jfs/t2119/133/2264148064/4303/b8ab3755/56b2f385N8e4eb051.jpg",
-            "letter": "O",
-            "categories": null
-          },
-          {
-            "id": 2033,
-            "name": "飞利浦（PHILIPS）",
-            "image": "http://img12.360buyimg.com/popshop/jfs/t18361/122/1318410299/1870/36fe70c9/5ac43a4dNa44a0ce0.jpg",
-            "letter": "F",
-            "categories": null
-          },
-          {
-            "id": 2034,
-            "name": "华为（HUAWEI）",
-            "image": "http://img10.360buyimg.com/popshop/jfs/t5662/36/8888655583/7806/1c629c01/598033b4Nd6055897.jpg",
-            "letter": "H",
-            "categories": null
+        this.loading = true; // 加载数据
+        // 通过axios获取数据
+        this.$http.get("/item/brand/page", {
+          params: {
+            page: this.pagination.page, // 当前页
+            rows: this.pagination.rowsPerPage, // 每页条数
+            sortBy: this.pagination.sortBy, // 排序字段
+            desc: this.pagination.descending, // 是否降序
+            key: this.search // 查询字段
           }
-        ];
-        // 延迟一段时间，模拟数据请求时间
-        setTimeout(() => {
-          this.brands = brands; // 赋值给品牌数组
-          this.totalBrands = brands.length; // 赋值数据总条数
-          this.loading = false; //数据加载完成
-        }, 1000);
+        }).then(resp => { // 获取响应结果对象
+          this.totalBrands = resp.data.total; // 总条数
+          this.brands = resp.data.items; // 品牌数据
+          this.loading = false; // 加载完成
+        })
       },
     },
     // 渲染后执行
     mounted() {
       this.getDataFromServer();// 调用数据初始化函数
+    },
+    watch: {
+      pagination: { // 监视pagination属性的变化
+        deep: true, // deep为true，会监视pagination的属性及属性中的对象属性变化
+        handler() {
+          // 变化后的回调函数，这里我们再次调用getDataFromServer
+          this.getDataFromServer();
+        }
+      },
+      search: {
+        handler() {
+          this.getDataFromServer();
+        }
+      }
     }
   }
 </script>
