@@ -25,7 +25,7 @@
       <v-flex>
         <v-upload
           v-model="brand.image"
-          url="/upload"
+          url="/upload/image"
           :multiple="false"
           :pic-width="250"
           :pic-height="90"/>
@@ -77,6 +77,7 @@
             this.$http.post('/item/brand', this.$qs.stringify(params))
               .then(() => {
                 // 6、弹出提示
+                this.categories = [];
                 this.$emit("close");
                 this.$message.success("保存成功!");
               })
