@@ -42,6 +42,15 @@
 <script>
     export default {
       name: "my-brand-form",
+      props: {
+        oldBrand: {
+          type:Object,
+        },
+        isEdit: {
+          type: Boolean,
+          default: false
+        }
+      },
       data() {
         return {
           valid: false, // 表单校验结果标记
@@ -74,16 +83,17 @@
             // 4.将字母都处理为大写
             params.letter = letter.toUpperCase();
             // 5.将数据提交到后台
-            this.$http.post('/item/brand', this.$qs.stringify(params))
-              .then(() => {
-                // 6、弹出提示
-                this.categories = [];
-                this.$emit("close");
-                this.$message.success("保存成功!");
-              })
-              .catch(() => {
-                this.$message.error("保存失败!");
-              })
+            this.$http({
+              method: this.isEdit ? 'put' : 'post', // 动态判断使用post还是put
+              url: '/item/brand',
+              data: this.$qs.stringify(params)
+            }).then(() => {
+              // 关闭窗口
+              this.$emit("close");
+              this.$message.success("保存成功!");
+            }).catch(() => {
+              this.$message.error("保存失败!");
+            })
           }
         },
         clear() {
@@ -91,6 +101,27 @@
           this.$refs.myBrandForm.reset();
           // 需要手动清空商品分类
           this.categories = [];
+        }
+      },
+      watch: {
+        // 监控oldBrand的变化
+        oldBrand: {
+          handler(val) {
+            console.log(val);
+            if (val) {
+              // 不能直接复制，否则会影响父组件的数据，使用copy属性
+              this.brand = Object.deepCopy(val);
+            } else {
+              // 为空，初始化brand
+              this.brand = {
+                name:"",
+                letter:"",
+                image:"",
+                categories: []
+              }
+            }
+          },
+          deep: true
         }
       }
     }

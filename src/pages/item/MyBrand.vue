@@ -21,9 +21,7 @@
         </td>
         <td class="text-xs-center">{{ props.item.letter }}</td>
         <td class="text-xs-center">
-          <v-icon small class="mr-2" @click="editItem(props.item)">
-            edit
-          </v-icon>
+          <v-btn color="info" @click="editBrand(props.item)">编辑</v-btn>
           <v-icon small @click="deleteItem(props.item)">
             delete
           </v-icon>
@@ -35,14 +33,14 @@
       <v-card>
         <!--对话框标题-->
         <v-toolbar dense dark color="primary">
-          <v-toolbar-title>新增品牌</v-toolbar-title>
+          <v-toolbar-title>{{isEdit ? "修改" : "新增"}}品牌</v-toolbar-title>
           <v-spacer/>
           <!--关闭窗口的按钮-->
           <v-btn icon @click="closeWindow"><v-icon>close</v-icon></v-btn>
         </v-toolbar>
         <!--对话框的内容，表单-->
         <v-card-text class="px-5">
-          <my-brand-form @close="closeWindow"></my-brand-form>
+          <my-brand-form @close="closeWindow" :oldBrand="oldBrand" :isEdit="isEdit"></my-brand-form>
         </v-card-text>
       </v-card>
     </v-dialog>
@@ -72,9 +70,25 @@
           {text: '操作', align: 'center', value: 'id', sortable: false}
         ],
         show: false, // 控制对话框的显示
+        oldBrand: {}, // 即将被编辑的品牌数据
+        isEdit: false
       }
     },
     methods: {
+      // 编辑品牌
+      editBrand(oldBrand){
+        // 根据品牌信息查询商品分类
+        this.$http.get("/item/category/bid/" + oldBrand.id)
+          .then(({data}) => {
+            // 修改标记
+            this.isEdit = true;
+            // 控制窗口可见
+            this.show = true;
+            // 获取要编辑的brand
+            this.oldBrand = oldBrand;
+            this.oldBrand.categories = data;
+          })
+      },
       getDataFromServer() { // 从服务端加载数据
         this.loading = true; // 加载数据
         // 通过axios获取数据
@@ -93,8 +107,12 @@
         })
       },
       addBrand() {
+        // 添加是否是编辑标签
+        this.isEdit = false;
         // 控制弹窗可见
         this.show = true;
+        // 清空之前的数据
+        this.oldBrand = null;
       },
       closeWindow() {
         // 关闭窗口
