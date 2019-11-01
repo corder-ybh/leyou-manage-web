@@ -39,8 +39,8 @@
       <template slot="items" slot-scope="props">
         <td class="text-xs-center">{{ props.item.id }}</td>
         <td class="text-xs-center">{{ props.item.title }}</td>
-        <td class="text-xs-center">{{ props.item.categoryName}}</td>
-        <td class="text-xs-center">{{ props.item.brandName }}</td>
+        <td class="text-xs-center">{{ props.item.cname}}</td>
+        <td class="text-xs-center">{{ props.item.bname }}</td>
         <td class="justify-center layout px-0">
           <v-btn icon small @click="editItem(props.item)">
             <i class="el-icon-edit"/>
@@ -168,7 +168,7 @@
       },
       editItem(item) {
         this.selectedGoods = item;
-        const names = item.categoryName.split("/");
+        const names = item.cname.split("/");
         this.selectedGoods.categories = [
           {id: item.cid1, name: names[0]},
           {id: item.cid2, name: names[1]},
@@ -201,13 +201,28 @@
 
       },
       getDataFromApi() {
-        this.loading = true;
-        setTimeout(() => {
-          // 返回假数据
-          this.items = goodsData.slice(0, 4);
-          this.totalItems = 25;
+        this.$http.get("/item/spu/page", {
+          params: {
+            key: this.search.key, // 搜索条件
+            saleable: this.search.saleable, // 上下架
+            page: this.pagination.page,// 当前页
+            rows: this.pagination.rowsPerPage,// 每页大小
+            sortBy: this.pagination.sortBy,// 排序字段
+            desc: this.pagination.descendingsaleable// 是否降序
+          }
+        }).then(resp => { // 这里使用箭头函数
+          this.items = resp.data.items;
+          this.totalItems = resp.data.total;
+          // 完成赋值后，把加载状态赋值为false
           this.loading = false;
-        }, 300)
+        })
+        // this.loading = true;
+        // setTimeout(() => {
+        //   // 返回假数据
+        //   this.items = goodsData.slice(0, 4);
+        //   this.totalItems = 25;
+        //   this.loading = false;
+        // }, 300)
       }
     }
   }
